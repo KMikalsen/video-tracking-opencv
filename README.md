@@ -1,2 +1,2 @@
-video-tracking-opencv
+Video tracking using OpenCV
 =====================
