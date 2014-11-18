@@ -1,15 +1,16 @@
+############## VERSION 20141118-PC
 import cv2
 import numpy as np
 #import client
+import serial
+import time
 font = cv2.FONT_HERSHEY_SIMPLEX
+ser = serial.Serial("COM6",115200)
 mask2 = np.zeros((480,640), np.uint8)
 meanVal = [2,128,208]
 
 def nothing(x):
     pass
-#client.sendMessage("Hello")
-
-
 # 2
 # 128
 # 208
@@ -26,10 +27,10 @@ cv2.createTrackbar('h','box',0,255,nothing)
 cv2.createTrackbar('s','box',55,255,nothing)
 cv2.createTrackbar('v','box',223,255,nothing)
 
-cv2.createTrackbar('lx','box',156,640,nothing)
-cv2.createTrackbar('ly','box',15,480,nothing)
-cv2.createTrackbar('rx','box',580,640,nothing)
-cv2.createTrackbar('ry','box',424,480,nothing)
+cv2.createTrackbar('lx','box',74,640,nothing)
+cv2.createTrackbar('ly','box',0,480,nothing)
+cv2.createTrackbar('rx','box',511,640,nothing)
+cv2.createTrackbar('ry','box',480,480,nothing)
 oldCx = 0
 oldCy = 0
 while(1):
@@ -44,6 +45,7 @@ while(1):
     cv2.rectangle(mask2,(lx,ly),(rx,ry),(255,255,255),-1)
     # Take each frame
     _, frame = cap.read()
+    frame = cv2.flip(frame,0)
     img = cv2.medianBlur(frame,5)
     # Convert BGR to HSV
     hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
@@ -75,7 +77,8 @@ while(1):
                 largest_contour = contour
 
         cnt = largest_contour #contours[0]
-        M = cv2.moments(cnt)
+        if cnt != None:
+            M = cv2.moments(cnt)
         if M["m00"] > 1000:
             if M['m00'] > 0:
                 cx = int(M['m10']/M['m00'])
@@ -83,19 +86,26 @@ while(1):
             #print "Cx: "+str(cx) + "\t Cy: "+str(cy)
             cv2.circle(frame,(cx,cy), 25, (0,0,255), 3)
             cv2.putText(frame,'Tracking',(10,50), font, 1.5,(0,255,0),2,cv2.CV_AA)
-            cv2.putText(frame,'X:'+str(cx)+' Y:'+str(cy),(cx+25,cy+25), font, 0.5,(255,0,0),1,cv2.CV_AA)
+            cv2.putText(frame,'X:'+str(cy)+' Y:'+str(cx),(cx+25,cy+25), font, 0.5,(255,0,0),1,cv2.CV_AA)
             vx = cx - oldCx
             vy = cy - oldCy
             cv2.line(frame,(cx,cy),(cx+vx*10,cy+vy*10),(255,0,0),2)
             oldCx = cx
             oldCy = cy
             #cv2.line(path,(oldCx,oldCy),(cx,cy),(255,255,255),2)
-            print "Vy: "+str(vy) + "\t Vx: "+str(vx) + "\t Cx: "+str(cx) + "\tCy: "+str(cy)
-            #client.sendMessage( "Cx: "+str(cx) + "\tCy: "+str(cy)) # NETTWORK
+            print str(cy) + " "+str(cx)
+            #client.sendMessage(str(cx) + " "+str(cy)+"o") # NETTWORK
+            #time.sleep(0.1)
+            ser.write(str(cy) + " "+str(cx)+"o")
+            #if(ser.inWaiting() > 0):
+            #    response = ser.readline()
+            #    print "Response: "+ response
     else:
         cv2.putText(frame,'Not tracking',(10,50), font, 1.5,(0,0,255),2,cv2.CV_AA)
-    frame = cv2.resize(frame, (1280, 960)) 
-    cv2.imshow('frame',frame)
+    frame = cv2.resize(frame, (640, 480))
+    if(frame != None):
+        cv2.imshow('frame',frame)
+    #print ser.readline()
     #cv2.imshow('res',res)
     #cv2.imshow('path',path)
     #cv2.imshow('tresh',th3)
