@@ -1,10 +1,13 @@
-#########VERSION 20141118-PI
+########VERSION 20141118-PI
 import cv2
 import numpy as np
+#import serial
 import client
 
 def nothing(x):
     pass
+
+#ser = serial.Serial('/dev/ttyACM0',115200)
 
 kernel = np.ones((5,5),np.uint8)
 mask2 = np.zeros((240,320),np.uint8)
@@ -37,7 +40,7 @@ while(1):
 
     # Take each frame
     _, frame = cap.read()
-
+    frame = cv2.flip(frame,0)
     # # Convert BGR to HSV
     hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
 
@@ -67,18 +70,20 @@ while(1):
         if cnt != None:
             M = cv2.moments(cnt)
         
-        if M["m00"] > 300:
-            if M['m00'] > 0:
-                cx = int(M['m10']/M['m00'])
-                cy = int(M['m01']/M['m00'])
-                cv2.circle(frame,(cx,cy), 15, (0,255,0), 2)
-   #             vx = cx - oldCx
-   #             vy = cy - oldCy
-   #             cv2.line(frame,(cx,cy),(cx+vx*10,cy+vy*10),(255,0,0),2)
-   #             oldCx = cx
-   #             oldCy = cy
-   #             #cv2.line(path,(oldCx,oldCy),(cx,cy),(255,255,255),2)
-                client.sendMessage(str(cx) + " "+str(cy)+"o") # NETTWORK
+            if M["m00"] > 300:
+                if M['m00'] > 0:
+                    cx = int(M['m10']/M['m00'])
+                    cy = int(M['m01']/M['m00'])
+                    cv2.circle(frame,(cx,cy), 15, (0,255,0), 2)
+   #                 vx = cx - oldCx
+   #                 vy = cy - oldCy
+   #                 cv2.line(frame,(cx,cy),(cx+vx*10,cy+vy*10),(255,0,0),2)
+   #                 oldCx = cx
+   #                 oldCy = cy
+   #                 #cv2.line(path,(oldCx,oldCy),(cx,cy),(255,255,255),2)
+   #                 ser.write(str(cy)+" "+str(cx)+"o")
+                    client.sendMessage(str(cy) + " "+str(cx)+"o") # NETTWORK
+   #                 print str(cx) +" "+ str(cy)
     cv2.imshow('frame',frame)
     cv2.waitKey(1)
 client.s.close()
