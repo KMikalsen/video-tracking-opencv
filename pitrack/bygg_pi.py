@@ -1,6 +1,7 @@
+#########VERSION 20141118-PI
 import cv2
 import numpy as np
-#import client
+import client
 
 def nothing(x):
     pass
@@ -77,8 +78,8 @@ while(1):
    #             oldCx = cx
    #             oldCy = cy
    #             #cv2.line(path,(oldCx,oldCy),(cx,cy),(255,255,255),2)
-                 #client.sendMessage( "Cx: "+str(cx) + "\tCy: "+str(cy)) # NETTWORK
+                client.sendMessage(str(cx) + " "+str(cy)+"o") # NETTWORK
     cv2.imshow('frame',frame)
     cv2.waitKey(1)
-#client.s.close()
+client.s.close()
 cv2.destroyAllWindows()
