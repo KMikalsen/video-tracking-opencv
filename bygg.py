@@ -1,7 +1,7 @@
 ############## VERSION 20141118-PC
 import cv2
 import numpy as np
-#import client
+
 import serial
 import time
 font = cv2.FONT_HERSHEY_SIMPLEX
@@ -9,18 +9,10 @@ ser = serial.Serial("COM6",115200)
 mask2 = np.zeros((480,640), np.uint8)
 meanVal = [2,128,208]
 
-def nothing(x):
-    pass
-# 2
-# 128
-# 208
 kernel = np.ones((5,5),np.uint8)
 
 cap = cv2.VideoCapture(1)
 cap.read()
-#grb = np.uint8([[[81,168,45]]])
-#hsv_grb = cv2.cvtColor(grb,cv2.COLOR_BGR2HSV)
-#print hsv_grb
 cv2.namedWindow('bars')
 cv2.namedWindow('box',flags = cv2.WINDOW_AUTOSIZE)
 cv2.createTrackbar('h','box',0,255,nothing)
@@ -60,11 +52,10 @@ while(1):
     dilation = cv2.morphologyEx(dilation, cv2.MORPH_OPEN, kernel)
     dilation = dilation & mask2
     cv2.imshow('mask',dilation)
-    #blur = cv2.bilateralFilter(mask,9,75,75)
+    
     # Bitwise-AND mask and original image
-
     res = cv2.bitwise_and(frame,frame, mask= dilation)
-
+    
     contours, hierarchy = cv2.findContours(dilation,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
     frame = cv2.bitwise_and(frame,frame,mask=mask2)
     if len(contours) > 0:
@@ -92,25 +83,14 @@ while(1):
             cv2.line(frame,(cx,cy),(cx+vx*10,cy+vy*10),(255,0,0),2)
             oldCx = cx
             oldCy = cy
-            #cv2.line(path,(oldCx,oldCy),(cx,cy),(255,255,255),2)
             print str(cy) + " "+str(cx)
-            #client.sendMessage(str(cx) + " "+str(cy)+"o") # NETTWORK
-            #time.sleep(0.1)
             ser.write(str(cy) + " "+str(cx)+"o")
-            #if(ser.inWaiting() > 0):
-            #    response = ser.readline()
-            #    print "Response: "+ response
     else:
         cv2.putText(frame,'Not tracking',(10,50), font, 1.5,(0,0,255),2,cv2.CV_AA)
     frame = cv2.resize(frame, (640, 480))
     if(frame != None):
         cv2.imshow('frame',frame)
-    #print ser.readline()
-    #cv2.imshow('res',res)
-    #cv2.imshow('path',path)
-    #cv2.imshow('tresh',th3)
     k = cv2.waitKey(1) & 0xFF
     if k == 27:
         break
-#client.s.close()
 cv2.destroyAllWindows()
